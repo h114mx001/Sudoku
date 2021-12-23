@@ -1,4 +1,7 @@
 from random import randint, shuffle
+import time
+
+level = [0, 1, 2, 3]
 
 numberList = [i for i in range(1, 10)]
 
@@ -25,18 +28,6 @@ def getBoardString(matrix):
                     boardString += "- - - - - - - - - - - \n"
     return boardString
 
-def checkBlock(block):
-    return set(block) == set(range(1, 10))
-
-def checkRow(matrix, row):
-    return checkBlock(matrix[row])
-
-def checkCol(matrix, col):
-    return checkBlock([matrix[row][col] for row in range(9)])
-
-def checkBox3x3(matrix, row, col):
-    return checkBlock([matrix[row + i][col + j] for i in range(3) for j in range(3)])
-
 #check if the grid is full of answer
 def finishGenerating(matrix):
     for i in range(0, 9):
@@ -48,6 +39,25 @@ def finishGenerating(matrix):
 #check if a 'num' can be placed in [row, col]
 def isSafe(matrix, row, col, num):
     return not num in matrix[row] and not num in [matrix[i][col] for i in range(9)] and not num in [matrix[row - row%3 + i][col - col%3 + j] for i in range(3) for j in range(3)]
+
+
+def solver(matrix):
+    global counter #counter for the number of solutions
+    for row in range(0, 9):
+        for col in range(0, 9):
+            if matrix[row][col] == 0:
+                for num in range(1, 10):
+                    if isSafe(matrix, row, col, num):
+                        matrix[row][col] = num
+                        if finishGenerating(matrix):
+                            counter += 1
+                            break
+                        else:
+                            if solver(matrix):
+                                return True
+                        matrix[row][col] = 0
+                return False
+    return False
 
 #generate a new puzzle:
 def generateSudokuBoard(matrix):
@@ -67,35 +77,17 @@ def generateSudokuBoard(matrix):
                 return False
     return False
 
-def solver(matrix):
-    global counter #counter for the number of solutions
-    for row in range(0, 9):
-        for col in range(0, 9):
-            if matrix[row][col] == 0:
-                for num in range(1, 10):
-                    if isSafe(matrix, row, col, num):
-                        matrix[row][col] = num
-                        if finishGenerating(matrix):
-                            counter += 1
-                            return True
-                        else:
-                            if solver(matrix):
-                                return True
-                return False
-    return False
-
 def createPuzzle(matrix, difficulty):
     global counter
-    global attempts 
-    if difficulty == "easy":
+    global attempts
+    if difficulty == level[0]:
         attempts = 2
-    elif difficulty == "medium":
+    elif difficulty == level[1]:
         attempts = 3
-    elif difficulty == "hard":
+    elif difficulty == level[2]:
         attempts = 4
-    elif difficulty == "expert":
+    elif difficulty == level[3]:
         attempts = 5
-    counter = 1
 
     while attempts > 0:
         row = randint(0, 8)
@@ -111,13 +103,14 @@ def createPuzzle(matrix, difficulty):
             copyGrid.append([])
             for c in range(0, 9):
                 copyGrid[r].append(matrix[r][c])
-        
+
         counter = 0
         solver(copyGrid)
+
         if counter != 1:
             matrix[row][col] = backup
             attempts -= 1
-
+    
 def getEditableCells(matrix):
     editableCells = []
     for row in range(0, 9):
@@ -126,12 +119,4 @@ def getEditableCells(matrix):
                 editableCells.append((row, col))
     return editableCells
 
-def testCode():
-    grid = initGrid()
-    generateSudokuBoard(grid)
-    print(getBoardString(grid))
-    createPuzzle(grid, "expert")
-
-
-if __name__ == "__main__":
-    testCode()
+#check unique value in row, col, and 3x3 grid
