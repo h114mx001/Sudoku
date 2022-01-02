@@ -1,5 +1,6 @@
 import pygame
 import time
+from gameHelper import getAllCollision
 import model, constants
 import os
 
@@ -119,9 +120,14 @@ class Board:
         pygame.draw.line(self.window, constants.black, (constants.startX, constants.startY), (constants.startX, constants.startY+9*constants.cellSize), 3)
         pygame.draw.line(self.window, constants.black, (constants.startX+9*constants.cellSize, constants.startY), (constants.startX+9*constants.cellSize, constants.startY+9*constants.cellSize), 3)
         self.textLabel(self.difficulty, 50, 20, constants.black) #difficulty
-        self.textLabel("01:34", 700, 20, constants.black) #timer
+        
+
+    def showTime(self, timeString):
+        self.textLabel(timeString, 650, 20, constants.black) 
 
     def changeState(self, clickedTile):
+        collisions = getAllCollision(self.board)
+        print(collisions)
         for i in range(9):
             for j in range(9):
                 if self.tiles[i][j] != clickedTile:
@@ -142,14 +148,12 @@ class Board:
                                 self.tiles[tmpI][tmpJ].sameRowColBox = True
                             else:
                                 self.tiles[tmpI][tmpJ].sameRowColBox = False
-
+                if (i, j) in collisions:
+                    self.tiles[i][j].violated = True
+                else:
+                    self.tiles[i][j].violated = False        
+        
         # self.getState()
-
-    def findViolated(self):
-        for i in range(1, 10):
-            for row in range(0, 9):
-                pass
-
 
     def getState(self):
         for i in range(9):
@@ -177,14 +181,13 @@ class Board:
         label = pygame.font.SysFont('roboto bold', 25).render(text, True, color)
         self.window.blit(label, (x, y))
 
-    def redraw(self, updatedBoard):
+    def redraw(self, updatedBoard, timeString):
         self.board = updatedBoard
+        self.showTime(timeString)
         for i in range(9):
             for j in range(9):
                 self.tiles[i][j].renewAttribute(self.isEditable(i, j))
         self.drawBoard()
-        
-        
 
 class Tile: 
     def __init__(self, window, x, y, value):

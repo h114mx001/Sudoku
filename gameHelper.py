@@ -120,3 +120,52 @@ def getEditableCells(matrix):
     return editableCells
 
 #check unique value in row, col, and 3x3 grid
+
+def checkRowValue(matrix, row, value):
+    collision = []
+    for i in range(0, 9):
+        if matrix[row][i] == value:
+            collision.append((row,i))
+    if len(collision) > 1:
+        return collision
+    else:
+        return [] 
+
+def checkColValue(matrix, col, value):
+    collision = []
+    for i in range(0, 9):
+        if matrix[i][col] == value:
+            collision.append((i,col))
+    if len(collision) > 1:
+        return collision
+    else:
+        return []
+
+def check3x3Value(matrix, row, col, value):
+    collision = []
+    for i in range(row - row % 3, row - row % 3 + 3):
+        for j in range(col - col % 3, col - col % 3 + 3):
+            if matrix[i][j] == value:
+                collision.append((i,j))
+    if len(collision) > 1:
+        return collision
+    else:
+        return []
+
+def getAllCollision(matrix):
+    collision = set()
+    for val in range(1, 10):
+        for i in range(0, 9):
+            rowCollision = checkRowValue(matrix, i, val)
+            colCollision = checkColValue(matrix, i, val)
+            collision = collision.union(collision, set(rowCollision + colCollision))
+        rows = [0, 3, 6]
+        cols = [0, 3, 6]
+        for row in rows:
+            for col in cols:
+                boxCollision = check3x3Value(matrix, row, col, val)
+                collision = collision.union(collision, set(boxCollision))
+    if len(collision) > 0:
+        return collision
+    else:
+        return []

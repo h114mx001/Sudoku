@@ -1,6 +1,8 @@
 import model, view, constants
 import pygame
 import os
+import time
+import pickle
 import tkinter as tk
 
 #sudoku GUI
@@ -9,6 +11,7 @@ pygame.init()
 mainWindow = pygame.display.set_mode((800, 560))
 mainWindow.fill((255, 255, 255))
 board = model.init()
+print(board.solvedBoard)
 difficulty = board.difficulty
 newBoard = view.Board(mainWindow, constants.difficulties[difficulty], board.getCurrentBoard())
 newBoard.setEditableCells(board.getEditableCells())
@@ -27,9 +30,21 @@ class Button(object):
             if self.rect.collidepoint(event.pos):
                 if self.callback:
                     self.callback()
+
+def savePassedTime(time):
+    with open("time.pickle", "wb") as file:
+        pickle.dump(time, file)
+
+def loadSavedTime():
+    try:
+        with open("time.pickle", "rb") as file:
+            return pickle.load(file)
+    except:
+        return 0
     
 pause = False
 gameFinished = False
+prevTime = loadSavedTime()
 
 def pausing():
     global pause
@@ -106,10 +121,7 @@ def commandReceiver(buttonMessage, indexMessage):
 
 def main():
     global pause
-    clock = pygame.time.Clock()
-    startTime = pygame.time.get_ticks()
-    isExited = False
-
+    start = time.time()
     pygame.display.set_caption("Sudoku Classic")
     
     buttons = view.Buttons()
@@ -120,6 +132,11 @@ def main():
     # number1 = numberButton(mainWindow, 1)
     newBoard.drawBoard()
     while gameFinished == False:
+        current = time.time()
+        timePassed = current - start + prevTime
+        hours, rem = divmod(timePassed, 3600)
+        minutes, seconds = divmod(rem, 60)
+        timeString = "{:0>2}:{:0>2}:{:0>2}".format(int(hours), int(minutes), int(seconds))
         mainWindow.fill(constants.white)
         buttons.display(mainWindow)
         pauseButton.draw(mainWindow)
@@ -127,6 +144,7 @@ def main():
   
             if event.type == pygame.QUIT:
                 model.saveCurrentGame(board)
+                savePassedTime(timePassed)
                 pygame.quit()
                 quit()
 
@@ -143,7 +161,7 @@ def main():
                 print(buttonCmd, currentCell)
                 commandReceiver(buttonCmd, currentCell)
 
-        newBoard.redraw(board.getCurrentBoard())
+        newBoard.redraw(board.getCurrentBoard(), timeString)
         pygame.display.update()
     
 main()
