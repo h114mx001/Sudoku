@@ -9,7 +9,9 @@ A GUI version of Classic Sudoku game.
 
 To install the libraries for the game, please run: 
 
-`pip install requirements.txt`
+`pip install -t requirements.txt`
+
+The game is also using the font 'Roboto'. Access the page https://fonts.google.com/specimen/Roboto to have your own version of this font.
 
 **Run the game**
 You can whether use some library to make it into a real application, base on your need. If you want to run it after download the source, please run:
